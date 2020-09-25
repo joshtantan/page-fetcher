@@ -14,7 +14,7 @@ if (url && filePath) {
     } else if (statusCode !== 200) {
       console.log("No error, but page not found with status code:", statusCode);
     } else {
-      fs.writeFile(filePath, body, function (err) {
+      fs.writeFile(filePath, body, function(err) {
         if (err) throw err;
 
         const byteSize = Buffer.byteLength(body, 'utf8');
