@@ -1,36 +1,26 @@
-const net = require('net');
 const fs = require('fs');
+const request = require('request');
 
 const url = process.argv[2];
 const filePath = process.argv[3];
 
 if (url && filePath) {
-  console.log(url);
-  console.log(filePath);
+  request(url, (error, response, body) => {
+    const statusCode = response.statusCode;
 
-  const conn = net.createConnection({ 
-    host: url,
-    port: 80
-  });
-  
-  conn.setEncoding('UTF8');
+    if (error) {
+      console.log(error);
+      console.log("Status code:", statusCode);
+    } else if (statusCode !== 200) {
+      console.log("No error, but page not found with status code:", statusCode);
+    } else {
+      fs.writeFile(filePath, body, function (err) {
+        if (err) throw err;
 
-  conn.on('connect', () => {
-    console.log(`Connected to server!`);
-
-    conn.write(`GET / HTTP/1.1\r\n`);
-    conn.write(`Host: ${url}\r\n`);
-    conn.write(`\r\n`);
-  });
-
-  conn.on('data', (data) => {
-    console.log("Webpage Data:", data);
-
-    fs.writeFile(filePath, data, function (err) {
-      if (err) throw err;
-      console.log('Saved!');
-    });
-    
-    conn.end();
+        const byteSize = Buffer.byteLength(body, 'utf8');
+        console.log(`Downloaded and saved ${byteSize} bytes to ${filePath}`);
+      });
+    }
   });
 }
+
